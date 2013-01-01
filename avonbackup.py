@@ -1,31 +1,35 @@
 def main ():
 	args = parse ()
 
-	if args.lockfile:
-		lock (args.lockfile)
-	unshare ()
-	bind_mount ('/', args.temp_mount)
-	obnam (args.repository, args.temp_mount)
+	with lock (args.lockfile):
+		unshare ()
+		bind_mount ('/', args.temp_mount)
+		obnam (args.repository, args.temp_mount)
 
-	if args.sleep:
-		print 'Backup complete!'
-		import time
-		while True:
-			time.sleep (86400)
+class lock (object):
+	def __init__ (self, lockfile):
+		self.lockfile = lockfile
+		self.lfd = None
 
-def lock (lockfile):
-	import os
-	l = os.open (lockfile, os.O_WRONLY | os.O_CREAT)
-	os.fchmod (l, 0666)
-	import fcntl
-	fcntl.lockf (l, fcntl.LOCK_EX | fcntl.LOCK_NB)
+	def __enter__ (self):
+		if not self.lockfile:
+			return
+		import os
+		self.lfd = os.open (self.lockfile, os.O_WRONLY | os.O_CREAT)
+		os.fchmod (self.lfd, 0666)
+		import fcntl
+		fcntl.lockf (self.lfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+	def __exit__ (self, *exc):
+		if (self.lfd):
+			import os
+			os.close (self.lfd)
 
 def parse ():
 	import argparse
 	parser = argparse.ArgumentParser ()
 	parser.add_argument ('--lockfile', help='Prevent concurrent instances from running by locking this file')
 	parser.add_argument ('--temp-mount', help='Path to temporary mount point used during backup', default='/mnt')
-	parser.add_argument ('--sleep', help='Sleep when done', action='store_true')
 	parser.add_argument ('repository', help='Path to the target obnam repository')
 	return parser.parse_args ()
 
