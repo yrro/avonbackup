@@ -1,3 +1,5 @@
+import subprocess
+
 def main ():
 	args = parse ()
 
@@ -36,20 +38,14 @@ def parse ():
 def unshare ():
 	import unshare as u
 	u.unshare (u.CLONE_NEWNS)
+	subprocess.check_call (['mount', '--make-rprivate', '/'])
 
 def bind_mount (source, target):
-	import ctypes as c
-	libc = c.cdll.LoadLibrary ('libc.so.6')
-	def check_libc_mount (r):
-		if r: raise OSError (c.get_errno ())
-	mount = c.CFUNCTYPE (check_libc_mount, c.c_char_p, c.c_char_p, c.c_char_p, c.c_ulong, c.c_void_p, use_errno=True) (('mount', libc))
-	MS_MGC_VAL = 0xc0ed0000
-	MS_BIND = 4096
-	mount (source, target, None, MS_MGC_VAL | MS_BIND, None)
+	subprocess.check_call (['mount', '--bind', source, target])
+	subprocess.check_call (['mount', '-o', 'bind,remount,ro', target])
 
 def obnam (repository, source):
 	obnam_args = (['obnam', '-r', repository])
-	import subprocess
 	subprocess.check_call (obnam_args + ['force-lock', source])
 	subprocess.check_call (obnam_args + ['backup', source])
 
