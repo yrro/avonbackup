@@ -48,7 +48,25 @@ def bind_mount (source, target):
 	subprocess.check_call (['mount', '-o', 'bind,remount,ro', target])
 
 def obnam (repository, source):
-	obnam_args = (['obnam', '-r', repository])
+	import re
+	excludes = [
+		r'^{}/tmp/.',
+		r'^{}/var/tmp/.',
+		r'^{}/var/cache/apt/.*\.bin$',
+		r'^{}/var/cache/apt/archives/.*\.deb$',
+		r'^{}/var/cache/apt/archives/partial/.',
+		r'^{}/home/[^/]/\.cache/.',
+	]
+	obnam_args = ['obnam',
+		'--no-default-configs',
+		'--log={}.log'.format(repository),
+		'--log-max=1Mi',
+		'--log-level=debug',
+		'--keep=12m,10y',
+		'--exclude-caches',
+		'-r', repository]
+	for e in excludes:
+		obnam_args.extend(['--exclude', e.format((re.escape(source)),)])
 	subprocess.check_call (obnam_args + ['force-lock', source])
 	subprocess.check_call (obnam_args + ['backup', source])
 
