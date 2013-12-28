@@ -55,7 +55,7 @@ def obnam (repository, source):
 		r'^{}/var/cache/apt/.*\.bin$',
 		r'^{}/var/cache/apt/archives/.*\.deb$',
 		r'^{}/var/cache/apt/archives/partial/.',
-		r'^{}/home/[^/]/\.cache/.',
+		r'^{}/home/[^/]+/\.cache/.',
 	]
 	obnam_args = ['obnam',
 		'--no-default-configs',
