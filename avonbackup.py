@@ -69,6 +69,7 @@ def obnam (repository, source):
 		obnam_args.extend(['--exclude', e.format((re.escape(source)),)])
 	subprocess.check_call (obnam_args + ['force-lock', source])
 	subprocess.check_call (obnam_args + ['backup', source])
+	subprocess.check_call (obnam_args + ['forget'])
 
 if __name__ == '__main__':
 	main ()
