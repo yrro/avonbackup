@@ -60,7 +60,7 @@ def obnam (repository, source):
 	obnam_args = ['obnam',
 		'--no-default-configs',
 		'--log={}.log'.format(repository),
-		'--log-max=1Mi',
+		'--log-max=10Mi',
 		'--log-level=debug',
 		'--keep=12m,10y',
 		'--exclude-caches',
