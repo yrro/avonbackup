@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import subprocess
 
 def main ():
@@ -7,6 +9,7 @@ def main ():
 		unshare ()
 		bind_mount ('/', args.temp_mount)
 		obnam (args.repository, args.temp_mount)
+	print('Backup complete.')
 
 class lock (object):
 	def __init__ (self, lockfile):
